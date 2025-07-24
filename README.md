@@ -1,8 +1,10 @@
 # Test of routing pedestrians on network in MATSim – 24/07/2025
 
 See Chapter 21 of MATSim book on multimodal simulations.
+
 Multimodal module can be used to run walk and bike on the network.
-Ignore their interactions with cars, crete ans use a "parallel" network for each mode.
+
+Ignore their interactions with cars, create ans use a kind of "parallel" network for each mode.
 
 ## Installation
 1. install Eclipse 4.36.0
@@ -15,14 +17,17 @@ Ignore their interactions with cars, crete ans use a "parallel" network for each
 Run simulation: this should work, with agents’walking trips teleported
 
 2. Add the multimodal module as a dependency in the pom.xml file
-	<dependency>
+	```
+    <dependency>
 		<groupId>org.matsim.contrib</groupId>
 		<artifactId>multimodal</artifactId>
 		<version>${matsim.version}</version>
 	</dependency>
+    ```
 
 3. Edit RunMatsim.java to add the multimodal configuration:
-	Config config;
+	```
+    Config config;
 	if ( args==null || args.length==0 || args[0]==null ){
 		config = ConfigUtils.loadConfig( "scenarios/equil/config.xml" );
 	} else {
@@ -34,9 +39,11 @@ Run simulation: this should work, with agents’walking trips teleported
 	Controler controler = new Controler( scenario ) ;
 	controler.addOverridingModule(new MultiModalModule());
 	controler.run();
+    ```
 
 4. Add the multimodal module congiguration into the config.xml file
-	<module name="multimodal">
+	``` 
+    <module name="multimodal">
 		<param name="createMultiModalNetwork" value="true" />
 		<param name="cuttoffValueForNonCarModes" value="22.22" />
 		<param name="dropNonCarRoutes" value="false" />
@@ -45,10 +52,10 @@ Run simulation: this should work, with agents’walking trips teleported
 		<param name="ensureActivityReachability" value="true" />
 	</module>
 	<module name="travelTimeCalculator" >
-		<!-- (only for backwards compatibility; only used if separateModes==false && + filterModes==true)  Transport modes that will be respected by the travel time collector. 'car' is default which includes also buses from the pt simulation module. -->
 		<param name="filterModes" value="true" />
 		<param name="analyzedModes" value="car,walk" />
 	</module>
+    ```
 	
 
 
@@ -57,30 +64,34 @@ Run simulation: this should work, with agents’walking trips teleported
 
 
 ## Things to consider:
-- in reality, pedestrians can usually walk in both directions on a link while here liks are directed
+- In reality, pedestrians can usually walk in both directions on a link while here liks are directed
 
 - Not sure about each config param for the multimodal module…
-createMultiModalNetwork" 
+```
+createMultiModalNetwork
 	true: create a multimodal network where links with free speeds < cutoff value will be usable for walk/bike.
 
-CuttoffValueForNonCarModes" 
-	 Only used, if createMultiModalNetwork is true (set value in m/s).  value="22.22" />
+CuttoffValueForNonCarModes
+	 Only used, if createMultiModalNetwork is true (set value in m/s). Example value="22.22"
 
-dropNonCarRoutes" value="false"
-	???
+dropNonCarRoutes
+	 value="false"???
 
-multiModalSimulationEnabled" value="true" 
+multiModalSimulationEnabled 
+    value="true" ???
 
 simulatedModes
 	values in walk, bike or transit_walk
 
-ensureActivityReachability" value="true
+ensureActivityReachability
+     value="true" ??
+```
 
+- Do pedestrians queue with cars? 
+Tested: put a pedestrian on a link before a car → ok, car can overtake pedestrian, no queueing
 
-- Do pedestrians queue with cars? tested: put a pedestrian on a link before a car → ok, car can overtake pedestrian, no queueing
+- Pedestrians walk at 1.34m/s (+-0.26 m/s) on the network. Possible to also consider the age, link slope, … (see class WalkTravelTime.java)
 
-- Pedestrians walk at 1.34m/s (+-0.26 m/s) on the network. Possible to also consider the age, link slope, … (see WalkTravelTime.java)
-
-- Also usable for bikes
+- Also usable for bikes but not tested
 
 - The travelTimeCalculator module with filterModes="true" and analyzedModes "car,walk" seems required to avoid the error about Filtering… when running a simulation
